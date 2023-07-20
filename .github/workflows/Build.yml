@@ -1,0 +1,30 @@
+name: Build and run Python script
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Clone repository
+        uses: actions/github-script@v2
+        env:
+          REPOSITORY_URL: "https://github.com/[username]/[repository]"
+        with:
+          script: |
+            git clone ${{ env.REPOSITORY_URL }}
+
+      - name: Run Python script
+        working-directory: [repository]
+        run: python script.py
