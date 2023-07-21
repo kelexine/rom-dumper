@@ -30,6 +30,7 @@ jobs:
 
       - name: Upload all decompressed files to releases page
         run: |
+          cd Infinix_Zero_8_X657C_MT6761_V124_200806/Firmware/
           for file in $(find . -type f); do
             upload-release-asset \
               repo_token=${{ secrets.GITHUB_TOKEN }} \
