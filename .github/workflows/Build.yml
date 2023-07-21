@@ -18,18 +18,13 @@ jobs:
 
       - name: Extract compressed archive
         run: unzip rom.zip
-
-  upload:
-    runs-on: ubuntu-latest
-
-    needs: extract
-
-    steps:
+        
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y git wget
 
       - name: Upload all decompressed files to releases page
         run: |
+          ls
           ls *
           cd Infinix_Zero_8_X657C_MT6761_V124_200806/Firmware/
           for file in $(find . -type f); do
