@@ -1,30 +1,39 @@
-name: Build and run Python script
+name: Extract and upload compressed archive
 
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
-  build:
+  extract:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check out repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
+      - name: Download compressed archive
+        run: curl -L https://github.com/bard/bard/archive/refs/heads/main.zip -o barda.zip
 
-      - name: Clone repository
-        uses: actions/github-script@v2
-        env:
-          REPOSITORY_URL: "https://github.com/[username]/[repository]"
-        with:
-          script: |
-            git clone ${{ env.REPOSITORY_URL }}
+      - name: Extract compressed archive
+        run: unzip barda.zip
 
-      - name: Run Python script
-        working-directory: [repository]
-        run: python script.py
+  upload:
+    runs-on: ubuntu-latest
+
+    needs: extract
+
+    steps:
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y git upload-release-asset
+
+      - name: Upload all decompressed files to releases page
+        run: |
+          for file in $(find . -type f); do
+            upload-release-asset \
+              repo_token=${{ secrets.GITHUB_TOKEN }} \
+              tag=${{ github.ref }} \
+              asset_name=${file} \
+              file=${file}
+          done
