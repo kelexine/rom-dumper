@@ -14,10 +14,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download compressed archive
-        run: curl -L https://github.com/bard/bard/archive/refs/heads/main.zip -o barda.zip
+        run: curl -L https://ava4.androidfilehost.com/dl/sesqszx6h-Vq_dMy1DDvvw/1690015461/10763459528675576300/Infinix_Zero_8_X657C_MT6761_V124_200806.zip -o rom.zip
 
       - name: Extract compressed archive
-        run: unzip barda.zip
+        run: unzip rom.zip
 
   upload:
     runs-on: ubuntu-latest
