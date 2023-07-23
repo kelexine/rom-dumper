@@ -43,7 +43,7 @@ jobs:
           # Replace the URL with the actual URL of the archive you want to download
           wget -O archive.zip  ${{ github.event.inputs.DOWNLOAD_URL }}
           unzip archive.zip
-          X657C-H6117G-RGo-INJO-LC-211214V384(MobiFirmware.com)/super.img ~/
+          rm X657C-H6117G-RGo-INJO-LC-211214V384(MobiFirmware.com)/*.com
           simg2img -c X657C-H6117G-RGo-INJO-LC-211214V384(MobiFirmware.com)/super.img X657C-H6117G-RGo-INJO-LC-211214V384(MobiFirmware.com)/compressed.img
       
     - name: Upload to Release
