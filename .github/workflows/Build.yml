@@ -44,5 +44,5 @@ jobs:
 
           # Use a wildcard to select all files in the extracted directory
           asset_path: ./Infinix_Zero_8_X657C_MT6761_V124_200806/Firmware/*   # Replace with the path to the extracted files
-          asset_name: *  # Replace with the desired name of the assets in the release
+          asset_name: boot.img  # Replace with the desired name of the assets in the release
           asset_content_type: application/octet-stream   # Replace with the appropriate content type
