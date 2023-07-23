@@ -5,7 +5,7 @@ on:
       DOWNLOAD_URL:
         description: 'DOWNLOAD_URL'
         required: true
-        default: 'https://download2357.mediafire.com/85r5c6p96yug2W0Bk86f33SzvLvAOIVcfdJOQdK12EKkfR5VWaAVdmTdDhagJ03UWJT4iX6GgpSEwKI8jcMk0uSqjOdtF4Ql1O8k9gSUs2aMaCRa4ODBRMJJZXPV0ldqbzrfhkTp-V0Er0VDUV9zd4jLPrqDWJ-5_FuKBL3oUbLnr8o/hpsv69frc76sucn/KG5j-H6126ABC-RGo-OP-220530V463_Firmware4Mobile.com.zip'
+        default: 'https://mor1.androidfilehost.com/dl/W5UfOIBdwP2JoP0F_XTFDA/1690214000/4279422670115710165/%5BHovatek%5D_Tecno_KG5J_%28KG5j-H6126ABC-RGo-OP-221028V431%29.zip'
       DEVICE_NAME:
         description: 'DEVICE_NAME'
         required: true
