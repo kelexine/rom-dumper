@@ -44,10 +44,11 @@ jobs:
       # Add a step to download the archive that contains the files you want to publish
     - name: Download Archive
       run: |
-           # Replace the URL with the actual URL of the archive you want to download
-           wget -O archive.zip  ${{ github.event.inputs.DOWNLOAD_URL }}
+           # Makes a dir according to the input from the user and downloads the rom
            mkdir ${{ github.event.inputs.DIR_NAME }}
-           unzip archive.zip -dj ${{ github.event.inputs.DIR_NAME }}/*
+           cd ${{ github.event.inputs.DIR_NAME }}
+           wget -O archive.zip  ${{ github.event.inputs.DOWNLOAD_URL }}
+           unzip archive.zip -dj 
           
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
