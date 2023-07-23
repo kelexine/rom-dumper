@@ -48,7 +48,7 @@ jobs:
            mkdir ${{ github.event.inputs.DIR_NAME }}
            cd ${{ github.event.inputs.DIR_NAME }}
            wget -O archive.zip  ${{ github.event.inputs.DOWNLOAD_URL }}
-           unzip archive.zip -dj 
+           unzip archive.zip -j 
           
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
