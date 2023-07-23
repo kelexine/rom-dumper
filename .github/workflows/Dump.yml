@@ -58,8 +58,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-           ./
-           *
+           ./*
         name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
         tag_name: ${{ github.run_id }}
         body: |
