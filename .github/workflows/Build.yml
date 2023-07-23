@@ -18,7 +18,7 @@ jobs:
       - name: Download Archive
         run: |
           # Replace the URL with the actual URL of the archive you want to download
-          wget -O archive.zip https://www.mediafire.com/file/mosmnmibs02fz22/X657C-H6117G-RGo-INJO-LC-211214V384%2528MobiFirmware.com%2529.zip
+          wget -O archive.zip https://download857.mediafire.com/qc56ccd1dq5gIKEt1HKGO3OBnNPRkXQm1KU8mpLJyD3OIyVND-kLYq7VyCPHj-PYN2zUOGS_fUlEzr6rzR4dZa84Pbskb6mgZD2_IwyTddU8EylMVHsdAjsT_Gh4NzZdfA3kMzci6EzV89EQRJnVUsb8h0lWHT4PFHvzKp86IZDdyw/mosmnmibs02fz22/X657C-H6117G-RGo-INJO-LC-211214V384%28MobiFirmware.com%29.zip
           unzip archive.zip
 
       # Create a release
