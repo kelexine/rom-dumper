@@ -37,7 +37,6 @@ jobs:
     - name: Prepare the build environment
       run: |
         sudo apt install git aria2 wget -y
-    steps:
     
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -49,7 +48,7 @@ jobs:
           wget -O archive.zip  ${{ github.event.inputs.DOWNLOAD_URL }}
           unzip archive.zip
       
-      - name: Upload to Release
+    - name: Upload to Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
