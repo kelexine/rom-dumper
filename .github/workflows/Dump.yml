@@ -50,16 +50,14 @@ jobs:
            cd ${{ github.event.inputs.DIR_NAME }}
            wget -O ${{ github.event.inputs.ARCHIVE_NAME }}  ${{ github.event.inputs.DOWNLOAD_URL }}
            unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
-           gzip -c super.img > super.img.gz
-           rm super.img
+           xz -k super.img
+           rm super.img *.url
            
           
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-           ${{ github.event.inputs.DIR_NAME }}/*.img
-           ${{ github.event.inputs.DIR_NAME }}/*.zip
            ${{ github.event.inputs.DIR_NAME }}/*
         name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
         tag_name: ${{ github.run_id }}
