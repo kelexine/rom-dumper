@@ -51,7 +51,7 @@ jobs:
            wget -O ${{ github.event.inputs.ARCHIVE_NAME }}  ${{ github.event.inputs.DOWNLOAD_URL }}
            unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
            xz -k super.img
-           rm super.img *.url
+           rm super.img
            
           
     - name: Upload to Release
