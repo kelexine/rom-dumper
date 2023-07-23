@@ -18,7 +18,7 @@ jobs:
       - name: Download Archive
         run: |
           # Replace the URL with the actual URL of the archive you want to download
-          wget -O archive.zip https://ava4.androidfilehost.com/dl/0yRNg146lhGQFmrSVw_DRg/1689951157/10763459528675576300/Infinix_Zero_8_X657C_MT6761_V124_200806.zip
+          wget -O archive.zip https://www.mediafire.com/file/mosmnmibs02fz22/X657C-H6117G-RGo-INJO-LC-211214V384%2528MobiFirmware.com%2529.zip/file?dkey=n7xpxsoi34x&r=1325
           unzip archive.zip
 
       # Create a release
