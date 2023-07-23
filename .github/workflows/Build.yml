@@ -22,6 +22,10 @@ on:
         description: 'DIR_NAME'
         required: true
         default: 'rom'
+      ARCHIVE_NAME:
+        description: 'ARCHIVE_NAME'
+        required: true
+        default: 'archive.zip'
 jobs:
   build:
     if: github.event.repository.owner.id == github.event.sender.id
@@ -47,14 +51,14 @@ jobs:
            # Makes a dir according to the input from the user and downloads the rom
            mkdir ${{ github.event.inputs.DIR_NAME }}
            cd ${{ github.event.inputs.DIR_NAME }}
-           wget -O archive.zip  ${{ github.event.inputs.DOWNLOAD_URL }}
-           unzip archive.zip -j 
+           wget -O ${{ github.event.inputs.ARCHIVE_NAME }}  ${{ github.event.inputs.DOWNLOAD_URL }}
+           unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
           
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ${{ github.event.inputs.DIR_NAME }}/*
+           }}/*
         name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
         tag_name: ${{ github.run_id }}
         body: |
