@@ -1,36 +1,48 @@
-name: Extract and upload compressed archive
+name: Publish Release
 
 on:
   push:
     branches:
-      - main
+      - main   # Replace 'main' with your main branch name
 
 jobs:
-  extract:
+  build:
+    name: Publish Release
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Download compressed archive
-        run: curl -L https://ava4.androidfilehost.com/dl/sesqszx6h-Vq_dMy1DDvvw/1690015461/10763459528675576300/Infinix_Zero_8_X657C_MT6761_V124_200806.zip -o rom.zip
-
-      - name: Extract compressed archive
-        run: unzip rom.zip
-        
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y git wget
-
-      - name: Upload all decompressed files to releases page
+      # Add a step to download the archive that contains the files you want to publish
+      - name: Download Archive
         run: |
-          ls
-          ls *
-          cd Infinix_Zero_8_X657C_MT6761_V124_200806/Firmware/
-          for file in $(find . -type f); do
-            upload-release-asset \
-              repo_token=${{ secrets.GITHUB_TOKEN }} \
-              tag=${{ github.ref }} \
-              asset_name=${file} \
-              file=${file}
-          done
+          # Replace the URL with the actual URL of the archive you want to download
+          wget -O archive.zip https://ava4.androidfilehost.com/dl/sesqszx6h-Vq_dMy1DDvvw/1690015461/10763459528675576300/Infinix_Zero_8_X657C_MT6761_V124_200806.zip
+          unzip archive.zip
+
+      # Create a release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v1.0.0   # Replace with your desired release tag name
+          release_name: Release v1.0.0   # Replace with your desired release name
+          draft: false
+          prerelease: false
+
+      # Upload the files to the release
+      - name: Upload Release Assets
+        id: upload-release-assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+
+          # Use a wildcard to select all files in the extracted directory
+          asset_path: .Infinix_Zero_8_X657C_MT6761_V124_200806/Firmware/*   # Replace with the path to the extracted files
+          asset_name: **  # Replace with the desired name of the assets in the release
+          asset_content_type: application/octet-stream   # Replace with the appropriate content type
