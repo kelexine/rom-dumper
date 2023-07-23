@@ -54,11 +54,11 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ${{ github.event.inputs.DOWNLOAD_URL }}/*
+          ${{ github.event.inputs.DIR_NAME }}/*
         name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
         tag_name: ${{ github.run_id }}
         body: |
-          Manifest: ${{ github.event.inputs.FILES_TYPE }}
+          Type: ${{ github.event.inputs.FILES_TYPE }}
           Device: ${{ github.event.inputs.DEVICE_NAME }}
           Target: ${{ github.event.inputs.ROM_TYPE }}
       env:
