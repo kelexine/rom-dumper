@@ -40,10 +40,10 @@ jobs:
       # Add a step to download the archive that contains the files you want to publish
     - name: Download Archive
       run: |
-          # Replace the URL with the actual URL of the archive you want to download
-          wget -O archive.zip  ${{ github.event.inputs.DOWNLOAD_URL }}
-          unzip archive.zip
-          tar -czvf X657C-H6117G-RGo-INJO-LC-211214V384(MobiFirmware.com)/compressed.img.tar.gz X657C-H6117G-RGo-INJO-LC-211214V384(MobiFirmware.com)/super.img      
+           # Replace the URL with the actual URL of the archive you want to download
+           wget -O archive.zip  ${{ github.event.inputs.DOWNLOAD_URL }}
+           unzip archive.zip
+          
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
       with:
