@@ -5,11 +5,11 @@ on:
       DOWNLOAD_URL:
         description: 'DOWNLOAD_URL'
         required: true
-        default: 'https://download857.mediafire.com/qc56ccd1dq5gIKEt1HKGO3OBnNPRkXQm1KU8mpLJyD3OIyVND-kLYq7VyCPHj-PYN2zUOGS_fUlEzr6rzR4dZa84Pbskb6mgZD2_IwyTddU8EylMVHsdAjsT_Gh4NzZdfA3kMzci6EzV89EQRJnVUsb8h0lWHT4PFHvzKp86IZDdyw/mosmnmibs02fz22/X657C-H6117G-RGo-INJO-LC-211214V384%28MobiFirmware.com%29.zip'
+        default: 'https://download2357.mediafire.com/85r5c6p96yug2W0Bk86f33SzvLvAOIVcfdJOQdK12EKkfR5VWaAVdmTdDhagJ03UWJT4iX6GgpSEwKI8jcMk0uSqjOdtF4Ql1O8k9gSUs2aMaCRa4ODBRMJJZXPV0ldqbzrfhkTp-V0Er0VDUV9zd4jLPrqDWJ-5_FuKBL3oUbLnr8o/hpsv69frc76sucn/KG5j-H6126ABC-RGo-OP-220530V463_Firmware4Mobile.com.zip'
       DEVICE_NAME:
         description: 'DEVICE_NAME'
         required: true
-        default: 'INFINIX SMART 5 X657C'
+        default: 'TECNO SPARK 8C KG5j'
       ROM_TYPE:
         description: 'ROM_TYPE'
         required: true
