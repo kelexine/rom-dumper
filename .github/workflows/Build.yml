@@ -46,6 +46,7 @@ jobs:
       run: |
            # Replace the URL with the actual URL of the archive you want to download
            wget -O archive.zip  ${{ github.event.inputs.DOWNLOAD_URL }}
+           mkdir ${{ github.event.inputs.DIR_NAME }}
            unzip archive.zip -d ${{ github.event.inputs.DIR_NAME }}/*
           
     - name: Upload to Release
