@@ -1,50 +1,65 @@
 name: Publish Release
-
 on:
-  push:
-    branches:
-      - main   # Replace 'main' with your main branch name
-
+  workflow_dispatch:
+    inputs:
+      DOWNLOAD_URL:
+        description: 'DOWNLOAD_URL'
+        required: true
+        default: 'https://download857.mediafire.com/qc56ccd1dq5gIKEt1HKGO3OBnNPRkXQm1KU8mpLJyD3OIyVND-kLYq7VyCPHj-PYN2zUOGS_fUlEzr6rzR4dZa84Pbskb6mgZD2_IwyTddU8EylMVHsdAjsT_Gh4NzZdfA3kMzci6EzV89EQRJnVUsb8h0lWHT4PFHvzKp86IZDdyw/mosmnmibs02fz22/X657C-H6117G-RGo-INJO-LC-211214V384%28MobiFirmware.com%29.zip'
+      DEVICE_NAME:
+        description: 'DEVICE_NAME'
+        required: true
+        default: 'INFINIX SMART 5 X657C'
+      ROM_TYPE:
+        description: 'ROM_TYPE'
+        required: true
+        default: 'STOCK ROM'
+      FILES_TYPE:
+        description: 'FILES_TYPE'
+        required: true
+        default: 'ALL ROM FILES'
 jobs:
   build:
-    name: Publish Release
-    runs-on: ubuntu-latest
-
+    if: github.event.repository.owner.id == github.event.sender.id
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+ 
+    # You might want to Checkout your repo first, but not mandatory
+    - name: Check Out
+      uses: actions/checkout@v3
+
+    # Cleanup The Actions Workspace Using Custom Composite Run Actions
+    - name: Cleanup
+      uses: rokibhasansagar/slimhub_actions@main
+
+    - name: Prepare the build environment
+      run: |
+        sudo apt install git aria2 wget -y
+    steps:
+    
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
       # Add a step to download the archive that contains the files you want to publish
-      - name: Download Archive
-        run: |
+    - name: Download Archive
+      run: |
           # Replace the URL with the actual URL of the archive you want to download
-          wget -O archive.zip https://download857.mediafire.com/qc56ccd1dq5gIKEt1HKGO3OBnNPRkXQm1KU8mpLJyD3OIyVND-kLYq7VyCPHj-PYN2zUOGS_fUlEzr6rzR4dZa84Pbskb6mgZD2_IwyTddU8EylMVHsdAjsT_Gh4NzZdfA3kMzci6EzV89EQRJnVUsb8h0lWHT4PFHvzKp86IZDdyw/mosmnmibs02fz22/X657C-H6117G-RGo-INJO-LC-211214V384%28MobiFirmware.com%29.zip
+          wget -O archive.zip  ${{ github.event.inputs.DOWNLOAD_URL }}
           unzip archive.zip
-          ls
-          ls *
-
-      # Create a release
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v1.1  # Replace with your desired release tag name
-          release_name: Release v1.1   # Replace with your desired release name
-          draft: false
-          prerelease: false
-
-      # Upload the files to the release
-      - name: Upload Release Assets
-        id: upload-release-assets
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-
-          # Use a wildcard to select all files in the extracted directory
-          asset_path: ./Infinix_Zero_8_X657C_MT6761_V124_200806/Firmware/*   # Replace with the path to the extracted files
-          asset_name: boot.img  # Replace with the desired name of the assets in the release
-          asset_content_type: application/octet-stream   # Replace with the appropriate content type
+      
+      - name: Upload to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          X657C-H6117G-RGo-INJO-LC-211214V384(MobiFirmware.com)/*.img
+          X657C-H6117G-RGo-INJO-LC-211214V384(MobiFirmware.com)/*.*
+        name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
+        tag_name: ${{ github.run_id }}
+        body: |
+          Manifest: ${{ github.event.inputs.FILES_TYPE }}
+          Device: ${{ github.event.inputs.DEVICE_NAME }}
+          Target: ${{ github.event.inputs.ROM_TYPE }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
