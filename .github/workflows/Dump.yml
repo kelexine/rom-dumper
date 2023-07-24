@@ -55,6 +55,7 @@ jobs:
           cd ${{ github.event.inputs.DIR_NAME }}
            unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
            xz -z super.img
+           rm ${{ github.event.inputs.ARCHIVE_NAME }}
           
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
