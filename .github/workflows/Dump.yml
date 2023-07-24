@@ -52,6 +52,7 @@ jobs:
     - name: Extract and Cleanup
       run: |
           #unzips the archive
+          cd ${{ github.event.inputs.DIR_NAME }}
            unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
            xz -z super.img
           
