@@ -58,8 +58,7 @@ jobs:
            cp lpunpack/lpunpack .lpunpack.sh
            simg2img super.img super.ext.img
            ls -lh
-           chmod 777 lpunpack.sh
-           ./lpunpacksh super.ext.img .
+           ./lpunpack.sh super.ext.img .
            xz -z system.img
            rm super.img
            rm ${{ github.event.inputs.ARCHIVE_NAME }}
