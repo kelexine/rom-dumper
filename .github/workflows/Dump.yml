@@ -56,8 +56,9 @@ jobs:
            unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
            git clone https://github.com/unix3dgforce/lpunpack
            cp lpunpack/lpunpack.py .
-           python3 lpunpack.py super.img
-           xz -z system.img.img
+           simg2img super.img super.ext.img
+           python3 lpunpack.py super.ext.img
+           xz -z system.img
            rm super.img
            rm ${{ github.event.inputs.ARCHIVE_NAME }}
           
