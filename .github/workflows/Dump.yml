@@ -57,6 +57,7 @@ jobs:
            git clone https://github.com/unix3dgforce/lpunpack
            cp lpunpack/lpunpack.py .
            simg2img super.img super.ext.img
+           ls
            lpunpack super.ext.img .
            xz -z system.img
            rm super.img
