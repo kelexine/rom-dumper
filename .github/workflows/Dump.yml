@@ -61,6 +61,7 @@ jobs:
            mv extracted/*.img .
            xz -z system_a.img
            rm super.ext.img
+           rm super.img
            rm ${{ github.event.inputs.ARCHIVE_NAME }}
           
     - name: Upload to Release
