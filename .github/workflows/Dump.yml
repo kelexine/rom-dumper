@@ -55,11 +55,11 @@ jobs:
           cd ${{ github.event.inputs.DIR_NAME }}
            unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
            git clone https://github.com/kelexine/lpunpack
-           cp lpunpack/lpunpack.sh .
+           cp lpunpack/lpunpack.py .
            simg2img super.img super.ext.img
            ls -lh
-           chmod 777 lpunpack.sh
-           ./lpunpack.sh super.ext.img .
+           chmod 777 lpunpack.py
+           ./lpunpack.py super.ext.img .
            xz -z system.img
            rm super.img
            rm ${{ github.event.inputs.ARCHIVE_NAME }}
