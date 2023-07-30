@@ -54,14 +54,12 @@ jobs:
           #unzips the archive
           cd ${{ github.event.inputs.DIR_NAME }}
            unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
-           git clone https://github.com/kelexine/lpunpack
-           cp lpunpack/lpunpack.py .
+           wget http://newandroidbook.com/tools/imjtool.tgz && tar xzvf imjtool.tgz
            simg2img super.img super.ext.img
            ls -lh
-           chmod 777 lpunpack.py
-           python3 lpunpack.py super.ext.img .
+           ./imjtool.ELF64 super.ext.img extract
            xz -z system.img
-           rm super.img
+           rm super.ext.img
            rm ${{ github.event.inputs.ARCHIVE_NAME }}
           
     - name: Upload to Release
