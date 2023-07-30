@@ -58,7 +58,7 @@ jobs:
            simg2img super.img super.ext.img
            ls -lh
            ./imjtool.ELF64 super.ext.img extract
-           xz -z system_a.img
+           xz -z system_a
            rm super.ext.img
            rm ${{ github.event.inputs.ARCHIVE_NAME }}
           
