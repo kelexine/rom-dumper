@@ -56,8 +56,8 @@ jobs:
            unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
            wget http://newandroidbook.com/tools/imjtool.tgz && tar xzvf imjtool.tgz
            simg2img super.img super.ext.img
-           ls -lh
            ./imjtool.ELF64 super.ext.img extract
+           ls -lh *
            xz -z system_a
            rm super.ext.img
            rm ${{ github.event.inputs.ARCHIVE_NAME }}
