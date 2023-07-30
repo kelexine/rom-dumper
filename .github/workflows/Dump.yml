@@ -58,6 +58,7 @@ jobs:
            cp lpunpack/lpunpack.sh .
            simg2img super.img super.ext.img
            ls -lh
+           chmod 777 lpunpack.sh
            ./lpunpack.sh super.ext.img .
            xz -z system.img
            rm super.img
