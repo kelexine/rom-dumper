@@ -60,6 +60,9 @@ jobs:
            ls -lh *
            mv extracted/*.img .
            xz -z system_a.img
+           xz -z system_ext_a.img
+           xz -z product_a.img
+           xz -z vendor_a.img
            rm super.ext.img
            rm super.img
            rm ${{ github.event.inputs.ARCHIVE_NAME }}
