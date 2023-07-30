@@ -40,7 +40,7 @@ jobs:
 
     - name: Prepare the environment
       run: |
-        sudo apt install git aria2 wget tar simg2img -y
+        sudo apt install git aria2 wget tar simg2img python3 -y
 
       # Add a step to download the archive that contains the files you want to publish
     - name: Download Archive
@@ -54,7 +54,11 @@ jobs:
           #unzips the archive
           cd ${{ github.event.inputs.DIR_NAME }}
            unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
-           xz -z super.img
+           git clone https://github.com/unix3dgforce/lpunpack
+           cp lpunpack/lpunpack.py .
+           python3 lpunpack.py super.img
+           xz -z system.img.img
+           rm super.img
            rm ${{ github.event.inputs.ARCHIVE_NAME }}
           
     - name: Upload to Release
