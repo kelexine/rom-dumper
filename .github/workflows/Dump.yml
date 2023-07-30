@@ -54,11 +54,12 @@ jobs:
           #unzips the archive
           cd ${{ github.event.inputs.DIR_NAME }}
            unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
-           git clone https://github.com/unix3dgforce/lpunpack
-           cp lpunpack/lpunpack.py .
+           git clone https://github.com/kelexine/lpunpack
+           cp lpunpack/lpunpack .
            simg2img super.img super.ext.img
            ls
-           lpunpack super.ext.img .
+           chmod 777 lpunpack
+           ./lpunpack super.ext.img .
            xz -z system.img
            rm super.img
            rm ${{ github.event.inputs.ARCHIVE_NAME }}
