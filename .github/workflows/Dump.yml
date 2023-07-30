@@ -5,7 +5,7 @@ on:
       DOWNLOAD_URL:
         description: 'DOWNLOAD_URL'
         required: true
-        default: 'https://mor1.androidfilehost.com/dl/W5UfOIBdwP2JoP0F_XTFDA/1690214000/4279422670115710165/%5BHovatek%5D_Tecno_KG5J_%28KG5j-H6126ABC-RGo-OP-221028V431%29.zip'
+        default: 'https://mva2.androidfilehost.com/dl/QZOc_Pt3uqoT1PhQUDUC_A/1690810658/4279422670115710164/%5BHovatek%5D_Tecno_KG5J_%28KG5j-H6126ABC-RGo-OP-220929V405%29.zip.zip'
       DEVICE_NAME:
         description: 'DEVICE_NAME'
         required: true
@@ -59,7 +59,7 @@ jobs:
            simg2img super.img super.ext.img
            ls -lh
            chmod 777 lpunpack.py
-           ./lpunpack.py super.ext.img .
+           python3 lpunpack.py super.ext.img .
            xz -z system.img
            rm super.img
            rm ${{ github.event.inputs.ARCHIVE_NAME }}
