@@ -1,0 +1,67 @@
+name: Extract Android Firmware
+on:
+  workflow_dispatch:
+    inputs:
+      DOWNLOAD_URL:
+        description: 'DOWNLOAD_URL'
+        required: true
+        default: 'https://dlcdnets.asus.com/pub/ASUS/ZenFone/AI2201/UL-ASUS_AI2201-ASUS-33.0610.2810.157-1.1.1-2307-user.zip'
+      DEVICE_NAME:
+        description: 'DEVICE_NAME'
+        required: true
+        default: 'ASUS ZENFONE AI2201'
+      ROM_TYPE:
+        description: 'ROM_TYPE'
+        required: true
+        default: 'STOCK ROM'
+      FILES_TYPE:
+        description: 'FILES_TYPE'
+        required: true
+        default: 'ALL ROM FILES'
+      DIR_NAME:
+        description: 'DIR_NAME'
+        required: true
+        default: 'rom'
+      ARCHIVE_NAME:
+        description: 'ARCHIVE_NAME'
+        required: true
+        default: 'archive.zip'
+jobs:
+  build:
+    if: github.event.repository.owner.id == github.event.sender.id
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install python python3-pip wger git 
+          pip3 install payload_dumper
+      - name: Download Archive
+        run: |
+           # Makes a dir according to the input from the user and downloads the rom
+           mkdir ${{ github.event.inputs.DIR_NAME }}
+           cd ${{ github.event.inputs.DIR_NAME }}
+           wget -O ${{ github.event.inputs.ARCHIVE_NAME }}  ${{ github.event.inputs.DOWNLOAD_URL }}
+      - name: Extract and Cleanup
+        run: |
+          #unzips the archive
+          cd ${{ github.event.inputs.DIR_NAME }}
+           unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
+          payload_dumper payload.bin
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+           ${{ github.event.inputs.DIR_NAME }}/*
+           name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
+          tag_name: ${{ github.run_id }}
+          body: |
+          Type: ${{ github.event.inputs.FILES_TYPE }}
+          Device: ${{ github.event.inputs.DEVICE_NAME }}
+          Target: ${{ github.event.inputs.ROM_TYPE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
