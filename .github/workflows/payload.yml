@@ -38,8 +38,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install python python3-pip wget git -y
-          pip3 install payload_dumper -y
+          sudo apt-get install python python3-pip wget git 
+          pip3 install payload_dumper
       - name: Download Archive
         run: |
            # Makes a dir according to the input from the user and downloads the rom
