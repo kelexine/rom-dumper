@@ -1,4 +1,4 @@
-name: Extract Android Firmware
+name: Extract Payload Firmware
 on:
   workflow_dispatch:
     inputs:
