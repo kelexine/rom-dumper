@@ -52,6 +52,8 @@ jobs:
           cd ${{ github.event.inputs.DIR_NAME }}
            unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
           payload_dumper payload.bin
+          ls -lh
+          rm payload.bin
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
