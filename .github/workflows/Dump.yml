@@ -1,4 +1,4 @@
-name: Rom Dumper
+name: MTK Rom Dumper
 on:
   workflow_dispatch:
     inputs:
