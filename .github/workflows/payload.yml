@@ -51,7 +51,7 @@ jobs:
           #unzips the archive
           cd ${{ github.event.inputs.DIR_NAME }}
           unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
-          payload_dumper payload.bin
+          payload_dumper payload.bin --out .
       - name: List All Files
         run: |
           cd ${{ github.event.inputs.DIR_NAME }}
@@ -63,7 +63,6 @@ jobs:
         with:
           files: |
            ${{ github.event.inputs.DIR_NAME }}/*
-           ${{ github.event.inputs.DIR_NAME }}/output/*
            name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
           tag_name: ${{ github.event.inputs.DEVICE_NAME }} ${{ github.run_id }}
           body: |
