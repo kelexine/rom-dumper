@@ -46,13 +46,14 @@ jobs:
            mkdir ${{ github.event.inputs.DIR_NAME }}
            cd ${{ github.event.inputs.DIR_NAME }}
            wget -O ${{ github.event.inputs.ARCHIVE_NAME }}  ${{ github.event.inputs.DOWNLOAD_URL }}
-      - name: Extract and Cleanup
+      - name: Extraction
         run: |
           #unzips the archive
           cd ${{ github.event.inputs.DIR_NAME }}
           unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
-          ls -lah
           payload_dumper payload.bin
+      - name: List All Files
+        run: |
           ls -lah
           rm payload.bin
       - name: Upload to Release
