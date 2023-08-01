@@ -58,6 +58,8 @@ jobs:
           ls -lah *
           rm payload.bin
           rm ${{ github.event.inputs.ARCHIVE_NAME }}
+          xz -z system.img
+          xz -z product.img
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
