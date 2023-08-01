@@ -63,6 +63,7 @@ jobs:
         with:
           files: |
            ${{ github.event.inputs.DIR_NAME }}/*
+           ${{ github.event.inputs.DIR_NAME }}/output/*
            name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
           tag_name: ${{ github.run_id }}
           body: |
