@@ -56,10 +56,11 @@ jobs:
         run: |
           cd ${{ github.event.inputs.DIR_NAME }}
           ls -lah *
-          rm payload.bin
-          rm ${{ github.event.inputs.ARCHIVE_NAME }}
-          xz -z system.img
-          xz -z product.img
+      - name: Compress Files And Delete all files greater than 2GB
+        run: |
+            wget https://github.com/kelexine/rom-dumper/releases/download/v1.o/compress.sh
+            chmod 777 compress.sh
+            bash compress.sh
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
