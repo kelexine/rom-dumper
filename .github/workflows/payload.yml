@@ -58,6 +58,8 @@ jobs:
           ls -lah *
       - name: Compress Files And Delete all files greater than 2GB
         run: |
+            cd ${{ github.event.inputs.DIR_NAME }}
+            rm ${{ github.event.inputs.ARCHIVE_NAME }}
             wget https://github.com/kelexine/rom-dumper/releases/download/v1.o/compress.sh
             chmod 777 compress.sh
             bash compress.sh
