@@ -55,7 +55,7 @@ jobs:
       - name: List All Files
         run: |
           cd ${{ github.event.inputs.DIR_NAME }}
-          ls -lah
+          ls -lah *
           rm payload.bin
           rm ${{ github.event.inputs.ARCHIVE_NAME }}
       - name: Upload to Release
