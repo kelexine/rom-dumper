@@ -57,6 +57,7 @@ jobs:
           cd ${{ github.event.inputs.DIR_NAME }}
           ls -lah
           rm payload.bin
+          rm ${{ github.event.inputs.ARCHIVE_NAME }}
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
