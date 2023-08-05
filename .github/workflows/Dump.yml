@@ -53,7 +53,7 @@ jobs:
       run: |
           #unzips the archive
           cd ${{ github.event.inputs.DIR_NAME }}
-           unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
+           unzip -jo ${{ github.event.inputs.ARCHIVE_NAME }} -d .
            wget http://newandroidbook.com/tools/imjtool.tgz && tar xzvf imjtool.tgz
            simg2img super.img super.ext.img
            ./imjtool.ELF64 super.ext.img extract
