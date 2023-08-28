@@ -5,7 +5,7 @@ on:
       DOWNLOAD_URL:
         description: 'DOWNLOAD_URL'
         required: true
-        default: 'https://mva2.androidfilehost.com/dl/QZOc_Pt3uqoT1PhQUDUC_A/1690810658/4279422670115710164/%5BHovatek%5D_Tecno_KG5J_%28KG5j-H6126ABC-RGo-OP-220929V405%29.zip.zip'
+        default: 'input ROM download link'
       DEVICE_NAME:
         description: 'DEVICE_NAME'
         required: true
@@ -25,7 +25,7 @@ on:
       ARCHIVE_NAME:
         description: 'ARCHIVE_NAME'
         required: true
-        default: 'archive.zip'
+        default: 'input file download name with correct archive type'
 jobs:
   build:
     if: github.event.repository.owner.id == github.event.sender.id
@@ -53,19 +53,10 @@ jobs:
       run: |
           #unzips the archive
           cd ${{ github.event.inputs.DIR_NAME }}
-           unzip -j ${{ github.event.inputs.ARCHIVE_NAME }} -d .
-           wget http://newandroidbook.com/tools/imjtool.tgz && tar xzvf imjtool.tgz
-           simg2img super.img super.ext.img
-           ./imjtool.ELF64 super.ext.img extract
-           ls -lh *
-           mv extracted/*.img .
-           xz -z system_a.img
-           xz -z system_ext_a.img
-           xz -z product_a.img
-           xz -z vendor_a.img
-           rm super.ext.img
-           rm super.img
-           rm ${{ github.event.inputs.ARCHIVE_NAME }}
+          git clone https://github.com/DumprX/DumprX.git .
+          ./setup.sh
+          ./dumper.sh ${{ github.event.inputs.ARCHIVE_NAME }}
+           
           
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
