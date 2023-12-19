@@ -49,6 +49,7 @@ jobs:
            mkdir ${{ github.event.inputs.DIR_NAME }}
            cd ${{ github.event.inputs.DIR_NAME }}
            wget -O ${{ github.event.inputs.ARCHIVE_NAME }}  ${{ github.event.inputs.DOWNLOAD_URL }}
+           ls -lah
     - name: Extract and Cleanup
       run: |
           #unzips the archive
