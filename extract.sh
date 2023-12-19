@@ -8,11 +8,10 @@ mkdir -p "$extract_dir"
 attempt_extract() {
   local archive="$1"
   local tool="$2"
-  local options="$3"
 
   if [ -f "$archive" ]; then
     echo "Attempting to extract '$archive' with '$tool'..."
-    if $tool $options "$archive" -C "$extract_dir"; then
+    if $tool "$archive" -C "$extract_dir" >/dev/null 2>&1; then
       echo "Extracted successfully!"
       return 0
     else
@@ -22,24 +21,19 @@ attempt_extract() {
   return 1
 }
 
-# Try extracting based on file extension
-for archive in *.{zip,tar.gz,tar.xz,7z}; do
-  case "$archive" in
-    *.zip) attempt_extract "$archive" unzip ;;
-    *.tar.gz | *.tar) attempt_extract "$archive" tar -xf ;;
-    *.tar.xz) attempt_extract "$archive" tar -xJf ;;
-    *.7z) attempt_extract "$archive" 7z x -o"$extract_dir" ;;
-    *) echo "Unsupported archive format: $archive" ;;
-  esac
+# Supported archive extensions
+archive_extensions=("zip" "tar.gz" "tar" "tar.xz" "7z")
 
-  # Stop processing if extraction succeeds
-  if [[ $? -eq 0 ]]; then
-    break
-  fi
+# Try extracting based on file extension
+for extension in "${archive_extensions[@]}"; do
+  archive=*.$extension
+  attempt_extract "$archive" "unzip" && break
+  attempt_extract "$archive" "tar" && break
+  attempt_extract "$archive" "7z" && break
 done
 
 # Install p7zip if no extraction succeeded
-if [[ $? -eq 1 ]]; then
+if [ $? -eq 1 ]; then
   echo "No built-in tools found. Installing p7zip..."
   if command -v apt-get &>/dev/null; then
     sudo apt-get update
@@ -53,7 +47,7 @@ if [[ $? -eq 1 ]]; then
 
   # Retry extraction with p7zip for all archives
   for archive in *.{zip,tar.gz,tar.xz,7z}; do
-    attempt_extract "$archive" 7z x -o"$extract_dir"
+    attempt_extract "$archive" "7z"
   done
 fi
 
