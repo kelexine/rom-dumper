@@ -54,6 +54,7 @@ jobs:
           #unzips the archive
           cp extract.sh ${{ github.event.inputs.DIR_NAME }}
           cd ${{ github.event.inputs.DIR_NAME }}
+          mkdir -p rom
           tar -xJf archive.tar.xz -C rom
           ls -lah *
           cd rom
