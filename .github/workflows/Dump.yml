@@ -54,13 +54,13 @@ jobs:
           #unzips the archive
           cp extract.sh ${{ github.event.inputs.DIR_NAME }}
           cd ${{ github.event.inputs.DIR_NAME }}
-          chmod 777 extract.sh
-          ./extract.sh
+          tar -xJf archive.tar.xz -C rom
+          ls -lah *
           cd rom
           wget http://newandroidbook.com/tools/imjtool.tgz && tar xzvf imjtool.tgz
           simg2img super.img super.ext.img
           ./imjtool.ELF64 super.ext.img extract
-          ls -lh *
+          ls -lh
           mv extracted/*.img .
           xz -z system_a.img
           xz -z system_ext_a.img
