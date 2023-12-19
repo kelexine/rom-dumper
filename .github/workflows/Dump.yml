@@ -56,6 +56,7 @@ jobs:
           cd ${{ github.event.inputs.DIR_NAME }}
           chmod 777 extract.sh
           ./extract.sh
+          cd rom
           wget http://newandroidbook.com/tools/imjtool.tgz && tar xzvf imjtool.tgz
           simg2img super.img super.ext.img
           ./imjtool.ELF64 super.ext.img extract
