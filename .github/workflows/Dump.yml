@@ -5,7 +5,7 @@ on:
       DOWNLOAD_URL:
         description: 'DOWNLOAD_URL'
         required: true
-        default: ''
+        default: 'https://github.com/kelexine/recovery-releases/releases/download/v4.1.1/kg5j-rom.tar.xz'
       DEVICE_NAME:
         description: 'DEVICE_NAME'
         required: true
@@ -25,7 +25,7 @@ on:
       ARCHIVE_NAME:
         description: 'ARCHIVE_NAME'
         required: true
-        default: 'archive.zip'
+        default: 'archive.tar.xz'
 jobs:
   build:
     if: github.event.repository.owner.id == github.event.sender.id
@@ -54,7 +54,8 @@ jobs:
           #unzips the archive
           cp extract.sh ${{ github.event.inputs.DIR_NAME }}
           cd ${{ github.event.inputs.DIR_NAME }}
-          unzip -jo ${{ github.event.inputs.ARCHIVE_NAME }} -d .
+          chmod 777 extract.sh
+          ./extract.sh
           wget http://newandroidbook.com/tools/imjtool.tgz && tar xzvf imjtool.tgz
           simg2img super.img super.ext.img
           ./imjtool.ELF64 super.ext.img extract
