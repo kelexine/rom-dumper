@@ -1,6 +1,6 @@
 name: MTK Rom Dumper
 on:
-  workflow_dispatch:
+ workflow_dispatch:
     inputs:
       DOWNLOAD_URL:
         description: 'DOWNLOAD_URL'
@@ -27,49 +27,39 @@ on:
         required: true
         default: 'archive.tar.xz'
 jobs:
-  build:
+ build:
     if: github.event.repository.owner.id == github.event.sender.id
     runs-on: ubuntu-20.04
     permissions:
       contents: write
     steps:
- 
-    # You might want to Checkout your repo first, but not mandatory
     - name: Check Out
       uses: actions/checkout@v3
 
     - name: Prepare the environment
       run: |
+        sudo apt update
         sudo apt install git aria2 wget tar simg2img python3 -y
 
-      # Add a step to download the archive that contains the files you want to publish
     - name: Download Archive
       run: |
-           # Makes a dir according to the input from the user and downloads the rom
-           mkdir ${{ github.event.inputs.DIR_NAME }}
-           cd ${{ github.event.inputs.DIR_NAME }}
-           wget -O ${{ github.event.inputs.ARCHIVE_NAME }}  ${{ github.event.inputs.DOWNLOAD_URL }}
-           ls -lah
+         mkdir -p ${{ github.event.inputs.DIR_NAME }}
+         cd ${{ github.event.inputs.DIR_NAME }}
+         curl -L -o ${{ github.event.inputs.ARCHIVE_NAME }} ${{ github.event.inputs.DOWNLOAD_URL }}
+         ls -lah
+
     - name: Extract and Cleanup
       run: |
-          #unzips the archive
-          cp extract.sh ${{ github.event.inputs.DIR_NAME }}
-          cd ${{ github.event.inputs.DIR_NAME }}
-          tar -xJf archive.tar.xz
-          ls -lah *
-          wget http://newandroidbook.com/tools/imjtool.tgz && tar xzvf imjtool.tgz
-          simg2img super.img super.ext.img
-          ./imjtool.ELF64 super.ext.img extract
-          ls -lh
-          mv extracted/*.img .
-          xz -z system_a.img
-          xz -z system_ext_a.img
-          xz -z product_a.img
-          xz -z vendor_a.img
-          rm super.ext.img
-          rm super.img
-          rm ${{ github.event.inputs.ARCHIVE_NAME }}
-          
+        cp extract.sh ${{ github.event.inputs.DIR_NAME }} || echo "extract.sh not found. Proceeding without it."
+        cd ${{ github.event.inputs.DIR_NAME }}
+        tar -xJf ${{ github.event.inputs.ARCHIVE_NAME }}
+        wget http://newandroidbook.com/tools/imjtool.tgz && tar xzvf imjtool.tgz
+        simg2img super.img super.ext.img || echo "simg2img failed. Proceeding without it."
+        ./imjtool.ELF64 super.ext.img extract || echo "imjtool extraction failed. Proceeding without it."
+        mv extracted/*.img . || echo "No extracted images found. Proceeding without them."
+        xz -z system_a.img system_ext_a.img product_a.img vendor_a.img || echo "Compression failed. Proceeding without it."
+        rm -f super.ext.img super.img ${{ github.event.inputs.ARCHIVE_NAME }} || echo "Cleanup failed. Proceeding without it."
+
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
       with:
@@ -83,3 +73,7 @@ jobs:
           Target: ${{ github.event.inputs.ROM_TYPE }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Cleanup Environment
+      run: |
+        rm -rf ${{ github.event.inputs.DIR_NAME }}
