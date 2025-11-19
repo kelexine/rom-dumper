@@ -1,79 +1,540 @@
-name: MTK Rom Dumper
+# Enhanced Universal ROM Dumper
+# Author: kelexine (https://github.com/kelexine)
+# Supports Android 11-16, Multiple Manufacturers, Various Archive Formats
+# Maintains backward compatibility with legacy devices
+
+name: Universal ROM Dumper
+
 on:
- workflow_dispatch:
+  workflow_dispatch:
     inputs:
       DOWNLOAD_URL:
-        description: 'DOWNLOAD_URL'
+        description: 'Direct download URL for ROM archive'
         required: true
-        default: 'https://github.com/kelexine/recovery-releases/releases/download/v4.1.1/kg5j-rom.tar.xz'
+        default: 'https://example.com/rom.zip'
       DEVICE_NAME:
-        description: 'DEVICE_NAME'
+        description: 'Device name/model'
         required: true
         default: 'TECNO SPARK 8C KG5j'
+      MANUFACTURER:
+        description: 'Device manufacturer'
+        required: true
+        type: choice
+        options:
+          - 'Generic'
+          - 'Samsung'
+          - 'Xiaomi'
+          - 'OPPO'
+          - 'Vivo'
+          - 'Realme'
+          - 'OnePlus'
+          - 'Motorola'
+          - 'Nokia'
+          - 'ASUS'
+          - 'Google'
+          - 'Huawei'
+          - 'Honor'
+          - 'TECNO'
+          - 'Infinix'
+          - 'iTel'
+        default: 'Generic'
+      ANDROID_VERSION:
+        description: 'Android version'
+        required: true
+        type: choice
+        options:
+          - 'Auto-detect'
+          - 'Android 16'
+          - 'Android 15'
+          - 'Android 14'
+          - 'Android 13'
+          - 'Android 12/12L'
+          - 'Android 11'
+          - 'Android 10 or earlier'
+        default: 'Auto-detect'
       ROM_TYPE:
-        description: 'ROM_TYPE'
+        description: 'ROM type'
         required: true
-        default: 'STOCK ROM'
-      FILES_TYPE:
-        description: 'FILES_TYPE'
+        type: choice
+        options:
+          - 'Stock ROM'
+          - 'Custom ROM'
+          - 'OTA Update'
+          - 'Firmware'
+        default: 'Stock ROM'
+      EXTRACT_MODE:
+        description: 'Extraction mode'
         required: true
-        default: 'ALL ROM FILES'
-      DIR_NAME:
-        description: 'DIR_NAME'
-        required: true
-        default: 'rom'
-      ARCHIVE_NAME:
-        description: 'ARCHIVE_NAME'
-        required: true
-        default: 'archive.tar.xz'
+        type: choice
+        options:
+          - 'Full (All partitions)'
+          - 'System only'
+          - 'Boot images only'
+          - 'Smart (Auto-select important)'
+        default: 'Smart (Auto-select important)'
+      COMPRESSION_LEVEL:
+        description: 'Output compression level (0-9, 9=max)'
+        required: false
+        default: '6'
+      SPLIT_LARGE_FILES:
+        description: 'Split files larger than 1.8GB'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  WORK_DIR: 'rom_workspace'
+  TOOLS_DIR: 'tools'
+  OUTPUT_DIR: 'output'
+  MAX_FILE_SIZE: '1900000000' # 1.9GB in bytes
+
 jobs:
- build:
+  dump-rom:
     if: github.event.repository.owner.id == github.event.sender.id
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
+    
     steps:
-    - name: Check Out
-      uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Prepare the environment
-      run: |
-        sudo apt update
-        sudo apt install git aria2 wget tar simg2img python3 -y
+      - name: Setup Environment
+        run: |
+          echo "::group::Installing system dependencies"
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3 python3-pip \
+            git wget curl aria2 \
+            p7zip-full unzip bzip2 xz-utils zstd lz4 \
+            android-sdk-libsparse-utils \
+            device-tree-compiler \
+            erofs-utils \
+            f2fs-tools \
+            e2fsprogs \
+            brotli \
+            openjdk-11-jre-headless
+          echo "::endgroup::"
+          
+          echo "::group::Installing Python dependencies"
+          pip3 install --upgrade pip
+          pip3 install \
+            protobuf \
+            pycryptodome \
+            python-lz4 \
+            bsdiff4 \
+            construct
+          echo "::endgroup::"
+          
+          echo "::group::Creating workspace structure"
+          mkdir -p ${{ env.WORK_DIR }} ${{ env.TOOLS_DIR }} ${{ env.OUTPUT_DIR }}
+          echo "::endgroup::"
 
-    - name: Download Archive
-      run: |
-         mkdir -p ${{ github.event.inputs.DIR_NAME }}
-         cd ${{ github.event.inputs.DIR_NAME }}
-         curl -L -o ${{ github.event.inputs.ARCHIVE_NAME }} ${{ github.event.inputs.DOWNLOAD_URL }}
-         ls -lah
+      - name: Download and Setup Tools
+        run: |
+          cd ${{ env.TOOLS_DIR }}
+          
+          echo "::group::Downloading extraction tools"
+          # imjtool for super partition
+          wget -q http://newandroidbook.com/tools/imjtool.tgz
+          tar xzf imjtool.tgz
+          chmod +x imjtool.ELF64
+          
+          # payload_dumper for payload.bin
+          pip3 install payload-dumper-go 2>/dev/null || pip3 install payload_dumper
+          
+          # lpunpack for super partition (alternative)
+          wget -q https://github.com/unix3dgforce/lpunpack/raw/main/lpunpack -O lpunpack || echo "lpunpack download optional"
+          chmod +x lpunpack 2>/dev/null || true
+          
+          # otatools for various operations
+          wget -q https://github.com/kelexine/android-tools/releases/download/v1.0/otatools.tar.xz -O otatools.tar.xz 2>/dev/null || echo "otatools optional"
+          tar xJf otatools.tar.xz 2>/dev/null || true
+          
+          # sdat2img for .dat files (older Android)
+          wget -q https://raw.githubusercontent.com/xpirt/sdat2img/master/sdat2img.py -O sdat2img.py
+          chmod +x sdat2img.py
+          echo "::endgroup::"
+          
+          ls -lah
 
-    - name: Extract and Cleanup
-      run: |
-        cp extract.sh ${{ github.event.inputs.DIR_NAME }} || echo "extract.sh not found. Proceeding without it."
-        cd ${{ github.event.inputs.DIR_NAME }}
-        tar -xJf ${{ github.event.inputs.ARCHIVE_NAME }}
-        wget http://newandroidbook.com/tools/imjtool.tgz && tar xzvf imjtool.tgz
-        simg2img super.img super.ext.img || echo "simg2img failed. Proceeding without it."
-        ./imjtool.ELF64 super.ext.img extract || echo "imjtool extraction failed. Proceeding without it."
-        mv extracted/*.img . || echo "No extracted images found. Proceeding without them."
-        xz -z system_a.img system_ext_a.img product_a.img vendor_a.img || echo "Compression failed. Proceeding without it."
-        rm -f super.ext.img super.img ${{ github.event.inputs.ARCHIVE_NAME }} || echo "Cleanup failed. Proceeding without it."
+      - name: Download ROM Archive
+        run: |
+          cd ${{ env.WORK_DIR }}
+          
+          echo "::group::Downloading ROM from URL"
+          echo "URL: ${{ github.event.inputs.DOWNLOAD_URL }}"
+          
+          # Detect archive extension from URL
+          URL="${{ github.event.inputs.DOWNLOAD_URL }}"
+          ARCHIVE_EXT="${URL##*.}"
+          ARCHIVE_NAME="rom_archive.${ARCHIVE_EXT}"
+          
+          # Use aria2c for faster downloads with resume support
+          aria2c -x 16 -s 16 -k 1M \
+            --console-log-level=warn \
+            --summary-interval=10 \
+            -o "$ARCHIVE_NAME" \
+            "${{ github.event.inputs.DOWNLOAD_URL }}" || \
+          wget --progress=bar:force:noscroll -O "$ARCHIVE_NAME" "${{ github.event.inputs.DOWNLOAD_URL }}" || \
+          curl -L -o "$ARCHIVE_NAME" "${{ github.event.inputs.DOWNLOAD_URL }}"
+          
+          echo "ARCHIVE_NAME=$ARCHIVE_NAME" >> $GITHUB_ENV
+          echo "Archive downloaded: $(du -h $ARCHIVE_NAME)"
+          echo "::endgroup::"
 
-    - name: Upload to Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-           ${{ github.event.inputs.DIR_NAME }}/*
-        name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
-        tag_name: ${{ github.run_id }}
-        body: |
-          Type: ${{ github.event.inputs.FILES_TYPE }}
+      - name: Extract ROM Archive
+        run: |
+          cd ${{ env.WORK_DIR }}
+          
+          echo "::group::Extracting archive: $ARCHIVE_NAME"
+          
+          # Universal extraction function
+          extract_archive() {
+            local archive="$1"
+            
+            case "$archive" in
+              *.zip)
+                echo "Extracting ZIP archive..."
+                unzip -q "$archive" 2>/dev/null || 7z x "$archive" -y
+                ;;
+              *.7z)
+                echo "Extracting 7Z archive..."
+                7z x "$archive" -y
+                ;;
+              *.tar.*)
+                echo "Extracting TAR archive..."
+                tar -xf "$archive"
+                ;;
+              *.tgz)
+                echo "Extracting TGZ archive..."
+                tar -xzf "$archive"
+                ;;
+              *.rar)
+                echo "Extracting RAR archive..."
+                7z x "$archive" -y
+                ;;
+              *)
+                echo "Attempting universal extraction with 7z..."
+                7z x "$archive" -y
+                ;;
+            esac
+          }
+          
+          extract_archive "$ARCHIVE_NAME"
+          
+          # Look for nested archives
+          find . -type f \( -name "*.zip" -o -name "*.7z" -o -name "*.tar.*" \) ! -name "$ARCHIVE_NAME" -exec bash -c 'extract_archive "$0"' {} \;
+          
+          echo "::endgroup::"
+          
+          echo "::group::Directory contents after extraction"
+          ls -lah
+          echo "::endgroup::"
+
+      - name: Detect ROM Structure
+        id: detect
+        run: |
+          cd ${{ env.WORK_DIR }}
+          
+          echo "::group::Analyzing ROM structure"
+          
+          ROM_STRUCTURE="unknown"
+          HAS_SUPER=false
+          HAS_PAYLOAD=false
+          HAS_SYSTEM_IMG=false
+          HAS_SDAT=false
+          HAS_OZIP=false
+          
+          # Detect different ROM structures
+          if [ -f "payload.bin" ]; then
+            echo "✓ Detected: payload.bin (A/B partition scheme)"
+            ROM_STRUCTURE="payload"
+            HAS_PAYLOAD=true
+          fi
+          
+          if [ -f "super.img" ] || [ -f "super.img.lz4" ] || [ -f "super.img.zst" ]; then
+            echo "✓ Detected: super.img (Dynamic partition)"
+            ROM_STRUCTURE="super"
+            HAS_SUPER=true
+          fi
+          
+          if [ -f "system.img" ] || [ -f "system.new.dat" ] || [ -f "system.new.dat.br" ]; then
+            echo "✓ Detected: Traditional partition images"
+            ROM_STRUCTURE="traditional"
+            HAS_SYSTEM_IMG=true
+          fi
+          
+          if [ -f "system.new.dat" ] || [ -f "system.transfer.list" ]; then
+            echo "✓ Detected: SDAT format (Android 5-9)"
+            HAS_SDAT=true
+          fi
+          
+          if find . -name "*.ozip" -print -quit | grep -q .; then
+            echo "✓ Detected: OZIP format (OPPO/Realme)"
+            HAS_OZIP=true
+          fi
+          
+          echo "ROM_STRUCTURE=$ROM_STRUCTURE" >> $GITHUB_ENV
+          echo "HAS_SUPER=$HAS_SUPER" >> $GITHUB_ENV
+          echo "HAS_PAYLOAD=$HAS_PAYLOAD" >> $GITHUB_ENV
+          echo "HAS_SYSTEM_IMG=$HAS_SYSTEM_IMG" >> $GITHUB_ENV
+          echo "HAS_SDAT=$HAS_SDAT" >> $GITHUB_ENV
+          echo "HAS_OZIP=$HAS_OZIP" >> $GITHUB_ENV
+          
+          echo "::endgroup::"
+
+      - name: Process OZIP Files (OPPO/Realme)
+        if: env.HAS_OZIP == 'true'
+        run: |
+          cd ${{ env.WORK_DIR }}
+          
+          echo "::group::Processing OZIP files"
+          # OZIP decryption logic would go here
+          # This requires manufacturer-specific keys
+          echo "OZIP files detected. Manual decryption may be required."
+          echo "::endgroup::"
+
+      - name: Extract Payload.bin
+        if: env.HAS_PAYLOAD == 'true'
+        run: |
+          cd ${{ env.WORK_DIR }}
+          
+          echo "::group::Extracting payload.bin"
+          
+          # Try payload-dumper-go first (faster)
+          if command -v payload-dumper-go &>/dev/null; then
+            payload-dumper-go -o . payload.bin
+          else
+            # Fallback to Python payload_dumper
+            python3 -m payload_dumper payload.bin --out .
+          fi
+          
+          echo "::endgroup::"
+
+      - name: Process Super Partition
+        if: env.HAS_SUPER == 'true' || env.ROM_STRUCTURE == 'payload'
+        run: |
+          cd ${{ env.WORK_DIR }}
+          
+          echo "::group::Processing super partition"
+          
+          # Find super.img (may have different names/compressions)
+          SUPER_IMG=$(find . -maxdepth 2 -type f \( -name "super.img*" -o -name "*super*.img*" \) | head -n 1)
+          
+          if [ -z "$SUPER_IMG" ]; then
+            echo "No super partition found, skipping..."
+            exit 0
+          fi
+          
+          echo "Found super image: $SUPER_IMG"
+          
+          # Decompress if needed
+          case "$SUPER_IMG" in
+            *.lz4)
+              echo "Decompressing LZ4..."
+              lz4 -d "$SUPER_IMG" super.img
+              SUPER_IMG="super.img"
+              ;;
+            *.zst)
+              echo "Decompressing ZSTD..."
+              zstd -d "$SUPER_IMG" -o super.img
+              SUPER_IMG="super.img"
+              ;;
+            *.br)
+              echo "Decompressing Brotli..."
+              brotli -d "$SUPER_IMG" -o super.img
+              SUPER_IMG="super.img"
+              ;;
+          esac
+          
+          # Convert sparse to raw if needed
+          if file "$SUPER_IMG" | grep -q "Android sparse"; then
+            echo "Converting sparse image to raw..."
+            simg2img "$SUPER_IMG" super_raw.img
+            SUPER_IMG="super_raw.img"
+          fi
+          
+          # Extract logical partitions from super
+          mkdir -p extracted
+          
+          # Try lpunpack first
+          if [ -f "../${{ env.TOOLS_DIR }}/lpunpack" ]; then
+            echo "Using lpunpack..."
+            ../${{ env.TOOLS_DIR }}/lpunpack -p system_a,system,vendor_a,vendor,product_a,product,system_ext_a,system_ext,odm_a,odm "$SUPER_IMG" extracted/
+          elif [ -f "../${{ env.TOOLS_DIR }}/imjtool.ELF64" ]; then
+            echo "Using imjtool..."
+            ../${{ env.TOOLS_DIR }}/imjtool.ELF64 "$SUPER_IMG" extract extracted/
+          else
+            echo "No extraction tool available for super partition"
+          fi
+          
+          # Move extracted images to root
+          if [ -d "extracted" ]; then
+            find extracted -name "*.img" -exec mv {} . \;
+          fi
+          
+          echo "::endgroup::"
+
+      - name: Process SDAT Files
+        if: env.HAS_SDAT == 'true'
+        run: |
+          cd ${{ env.WORK_DIR }}
+          
+          echo "::group::Converting SDAT files to IMG"
+          
+          for dat_file in *.new.dat *.new.dat.br; do
+            [ -f "$dat_file" ] || continue
+            
+            base_name="${dat_file%.new.dat*}"
+            transfer_list="${base_name}.transfer.list"
+            
+            # Decompress if brotli compressed
+            if [[ "$dat_file" == *.br ]]; then
+              echo "Decompressing $dat_file..."
+              brotli -d "$dat_file"
+              dat_file="${dat_file%.br}"
+            fi
+            
+            if [ -f "$transfer_list" ]; then
+              echo "Converting $dat_file to ${base_name}.img..."
+              python3 ../${{ env.TOOLS_DIR }}/sdat2img.py "$transfer_list" "$dat_file" "${base_name}.img"
+            fi
+          done
+          
+          echo "::endgroup::"
+
+      - name: Filter and Select Images
+        run: |
+          cd ${{ env.WORK_DIR }}
+          
+          echo "::group::Selecting images based on extraction mode"
+          
+          EXTRACT_MODE="${{ github.event.inputs.EXTRACT_MODE }}"
+          
+          case "$EXTRACT_MODE" in
+            "System only")
+              KEEP_PATTERNS="system*.img"
+              ;;
+            "Boot images only")
+              KEEP_PATTERNS="boot*.img recovery*.img vendor_boot*.img"
+              ;;
+            "Smart (Auto-select important)")
+              KEEP_PATTERNS="system*.img vendor*.img product*.img system_ext*.img boot*.img recovery*.img vbmeta*.img dtbo*.img super*.img"
+              ;;
+            *)
+              KEEP_PATTERNS="*.img"
+              ;;
+          esac
+          
+          # Move selected images to output
+          for pattern in $KEEP_PATTERNS; do
+            find . -maxdepth 1 -name "$pattern" -exec mv {} ../${{ env.OUTPUT_DIR }}/ \; 2>/dev/null || true
+          done
+          
+          echo "::endgroup::"
+
+      - name: Compress and Split Images
+        run: |
+          cd ${{ env.OUTPUT_DIR }}
+          
+          echo "::group::Compressing images"
+          
+          COMPRESSION_LEVEL="${{ github.event.inputs.COMPRESSION_LEVEL }}"
+          SPLIT_FILES="${{ github.event.inputs.SPLIT_LARGE_FILES }}"
+          MAX_SIZE=${{ env.MAX_FILE_SIZE }}
+          
+          for img in *.img; do
+            [ -f "$img" ] || continue
+            
+            img_size=$(stat -c%s "$img")
+            echo "Processing: $img ($(numfmt --to=iec-i --suffix=B $img_size))"
+            
+            # Compress with XZ
+            echo "  Compressing with level $COMPRESSION_LEVEL..."
+            xz -${COMPRESSION_LEVEL} -T0 "$img"
+            compressed="${img}.xz"
+            
+            # Check if splitting is needed
+            if [ "$SPLIT_FILES" = "true" ] && [ -f "$compressed" ]; then
+              compressed_size=$(stat -c%s "$compressed")
+              
+              if [ $compressed_size -gt $MAX_SIZE ]; then
+                echo "  Splitting $compressed (too large for GitHub)"
+                split -b 1800M -d "$compressed" "${compressed}.part"
+                rm "$compressed"
+                echo "  Created parts: ${compressed}.part*"
+              fi
+            fi
+          done
+          
+          echo "::endgroup::"
+
+      - name: Generate Metadata
+        run: |
+          cd ${{ env.OUTPUT_DIR }}
+          
+          cat > METADATA.txt << EOF
+          ROM Dump Metadata
+          =====================================
           Device: ${{ github.event.inputs.DEVICE_NAME }}
-          Target: ${{ github.event.inputs.ROM_TYPE }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          Manufacturer: ${{ github.event.inputs.MANUFACTURER }}
+          Android Version: ${{ github.event.inputs.ANDROID_VERSION }}
+          ROM Type: ${{ github.event.inputs.ROM_TYPE }}
+          Extraction Mode: ${{ github.event.inputs.EXTRACT_MODE }}
+          
+          Detected Structure: ${ROM_STRUCTURE}
+          Has Super Partition: ${HAS_SUPER}
+          Has Payload.bin: ${HAS_PAYLOAD}
+          
+          Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          Dumped by: kelexine/rom-dumper
+          Workflow Run: ${{ github.run_id }}
+          
+          Files:
+          =====================================
+          EOF
+          
+          ls -lh >> METADATA.txt
+          
+          # Generate checksums
+          sha256sum * > SHA256SUMS.txt 2>/dev/null || true
 
-    - name: Cleanup Environment
-      run: |
-        rm -rf ${{ github.event.inputs.DIR_NAME }}
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.OUTPUT_DIR }}/*
+          name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.event.inputs.MANUFACTURER }}-${{ github.run_id }}
+          tag_name: dump-${{ github.run_id }}
+          body: |
+            # 📱 ROM Dump: ${{ github.event.inputs.DEVICE_NAME }}
+            
+            **Device Information**
+            - **Model**: ${{ github.event.inputs.DEVICE_NAME }}
+            - **Manufacturer**: ${{ github.event.inputs.MANUFACTURER }}
+            - **Android Version**: ${{ github.event.inputs.ANDROID_VERSION }}
+            - **ROM Type**: ${{ github.event.inputs.ROM_TYPE }}
+            
+            **Extraction Details**
+            - **Mode**: ${{ github.event.inputs.EXTRACT_MODE }}
+            - **Compression**: Level ${{ github.event.inputs.COMPRESSION_LEVEL }}
+            - **Source**: [Download URL](${{ github.event.inputs.DOWNLOAD_URL }})
+            
+            **Important Notes**
+            - All images are compressed with XZ
+            - Large files are split into parts (reassemble with `cat file.part* > file`)
+            - SHA256 checksums included for verification
+            - See METADATA.txt for complete file listing
+            
+            ---
+            *Dumped by [kelexine/rom-dumper](https://github.com/kelexine/rom-dumper)*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup Workspace
+        if: always()
+        run: |
+          echo "::group::Cleaning up workspace"
+          rm -rf ${{ env.WORK_DIR }} ${{ env.TOOLS_DIR }} ${{ env.OUTPUT_DIR }}
+          echo "Cleanup complete"
+          echo "::endgroup::"
